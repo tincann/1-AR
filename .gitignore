@@ -28,4 +28,6 @@
 *.app
 
 #Debug
-Debug/
+*/Debug/
+*.sdf
+*.ipch
