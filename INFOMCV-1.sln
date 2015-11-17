@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "INFOMCV-1", "INFOMCV-1\INFOMCV-1.vcxproj", "{B5E0AB12-59CB-452F-8440-269F45698BC5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CameraCalibration", "CameraCalibration\CameraCalibration.vcxproj", "{E54D9364-2427-434A-8D38-664DA5B9372B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,6 +17,10 @@ Global
 		{B5E0AB12-59CB-452F-8440-269F45698BC5}.Debug|Win32.Build.0 = Debug|Win32
 		{B5E0AB12-59CB-452F-8440-269F45698BC5}.Release|Win32.ActiveCfg = Release|Win32
 		{B5E0AB12-59CB-452F-8440-269F45698BC5}.Release|Win32.Build.0 = Release|Win32
+		{E54D9364-2427-434A-8D38-664DA5B9372B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E54D9364-2427-434A-8D38-664DA5B9372B}.Debug|Win32.Build.0 = Debug|Win32
+		{E54D9364-2427-434A-8D38-664DA5B9372B}.Release|Win32.ActiveCfg = Release|Win32
+		{E54D9364-2427-434A-8D38-664DA5B9372B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

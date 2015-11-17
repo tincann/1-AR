@@ -29,7 +29,10 @@
 
 #Debug
 Debug/
+Release/
 *.sdf
 *.ipch
 *.suo
 *.opensdf
+
+*.user
