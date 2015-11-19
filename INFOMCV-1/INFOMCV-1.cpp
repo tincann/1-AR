@@ -14,6 +14,7 @@
 using namespace cv;
 using namespace std;
 
+//builds the checkerboard in 3d space
 vector<Point3f> Calculate3DPoints(int width, int height){
 	vector<Point3f> boardPoints;
 	for (int y = 0; y < height; y++) for (int x = 0; x < width; x++)
@@ -34,22 +35,20 @@ int _tmain(int argc, char* argv[])
 	Size boardsize;
 	boardsize.width = 6;
 	boardsize.height = 9;
-	vector<Point2f> foundBoardCorners;
-	bool found = findChessboardCorners(img, boardsize, foundBoardCorners, CV_CALIB_CB_ADAPTIVE_THRESH);
-
-	//
-	FileStorage fs("Config\\out_camera_data.xml", FileStorage::READ);
-	Mat intrinsics, distortion, cameraMatrix, distCoeffs;
-	fs["Camera_Matrix"] >> intrinsics;
-	fs["Distortion_Coefficients"] >> distortion;
-	fs["Camera_Matrix"] >> cameraMatrix;
-	fs["Distortion_Coefficients"] >> distCoeffs;
-
-	vector<Point3f> rvec, tvec;
+	vector<Point2f> points2d;
+	bool found = findChessboardCorners(img, boardsize, points2d, CV_CALIB_CB_ADAPTIVE_THRESH);
 
 	auto points3d = Calculate3DPoints(boardsize.width, boardsize.height);
 
-	solvePnP(Mat(points3d), Mat(foundBoardCorners), cameraMatrix, distCoeffs, rvec, tvec, false);
+	//read camera config
+	FileStorage fs("Config\\out_camera_data.xml", FileStorage::READ);
+	Mat cameraMatrix, distortion;
+	fs["Camera_Matrix"] >> cameraMatrix;
+	fs["Distortion_Coefficients"] >> distortion;
+	
+
+	vector<Point2f> rvec, tvec;
+	solvePnP(points3d, points2d, cameraMatrix, distortion, rvec, tvec, true);
 
 
 	return 0;
