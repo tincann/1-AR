@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(OPENCV_DIR)\build\include;$(BOOST_DIR);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_DIR)lib32-msvc-12.0;$(OPENCV_DIR)\build\x86\vc12\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(BOOST_DIR)\lib32-msvc-12.0;$(OPENCV_DIR)\build\x86\vc12\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(LibraryPath)</LibraryPath>
     <SourcePath>$(OPENCV_DIR)\modules\highgui\src;$(OPENCV_DIR)\modules\imgproc\src;$(OPENCV_DIR)\modules\core\src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
