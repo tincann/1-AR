@@ -27,8 +27,11 @@ vector<Point3f> Calculate3DPoints(int width, int height){
 
 int _tmain(int argc, char* argv[])
 {
+	//temporary
 	argv = new char*[2];
 	argv[1] = "Config\\left01.jpg";
+	
+	//read image
 	Mat img = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
 
 	//find chessboard corners
@@ -47,7 +50,7 @@ int _tmain(int argc, char* argv[])
 	fs["Distortion_Coefficients"] >> distortion;
 	
 
-	vector<Point2f> rvec, tvec;
+	Mat rvec, tvec;
 	solvePnP(points3d, points2d, cameraMatrix, distortion, rvec, tvec, true);
 
 
