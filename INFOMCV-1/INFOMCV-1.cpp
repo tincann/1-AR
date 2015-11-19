@@ -41,6 +41,7 @@ int _tmain(int argc, char* argv[])
 	vector<Point2f> points2d;
 	bool found = findChessboardCorners(img, boardsize, points2d, CV_CALIB_CB_ADAPTIVE_THRESH);
 
+
 	auto points3d = Calculate3DPoints(boardsize.width, boardsize.height);
 
 	//read camera config
