@@ -39,13 +39,11 @@ int _tmain(int argc, char* argv[])
 
 	//
 	FileStorage fs("Config\\out_camera_data.xml", FileStorage::READ);
-	Mat intrinsics, distortion;
+	Mat intrinsics, distortion, cameraMatrix, distCoeffs;
 	fs["Camera_Matrix"] >> intrinsics;
 	fs["Distortion_Coefficients"] >> distortion;
-
-	
-	Mat cameraMatrix(3, 3, cv::DataType<double>::type);
-	Mat distCoeffs = Mat::zeros(8, 1, CV_64F);
+	fs["Camera_Matrix"] >> cameraMatrix;
+	fs["Distortion_Coefficients"] >> distCoeffs;
 
 	vector<Point3f> rvec, tvec;
 
