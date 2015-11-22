@@ -25,6 +25,25 @@ vector<Point3f> Calculate3DPoints(int width, int height){
 	return boardPoints;
 }
 
+void drawAxisSystem(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat distortion){
+	
+	vector<Point3f> axisPoints;
+	axisPoints.push_back(Point3f(0, 0, 0));// middle point
+	axisPoints.push_back(Point3f(1, 0, 0));// x axis
+	axisPoints.push_back(Point3f(0, 1, 0));// y axis
+	axisPoints.push_back(Point3f(0, 0, 1));// z axis
+
+
+	vector<Point2f> imagePoints;
+	//project the points that represent the 3d axis vectors to 2d
+	projectPoints(axisPoints, rotation, translation, cameraMatrix, distortion, imagePoints);
+
+	//draw the lines
+	line(img, imagePoints[0], imagePoints[1], CV_RGB(255, 0, 0)); //x
+	line(img, imagePoints[0], imagePoints[2], CV_RGB(0, 255, 0)); //y
+	line(img, imagePoints[0], imagePoints[3], CV_RGB(0, 0, 255)); //z
+}
+
 int _tmain(int argc, char* argv[])
 {
 	//temporary
@@ -41,7 +60,6 @@ int _tmain(int argc, char* argv[])
 	vector<Point2f> points2d;
 	bool found = findChessboardCorners(img, boardsize, points2d, CV_CALIB_CB_ADAPTIVE_THRESH);
 
-
 	auto points3d = Calculate3DPoints(boardsize.width, boardsize.height);
 
 	//read camera config
@@ -49,11 +67,15 @@ int _tmain(int argc, char* argv[])
 	Mat cameraMatrix, distortion;
 	fs["Camera_Matrix"] >> cameraMatrix;
 	fs["Distortion_Coefficients"] >> distortion;
-	
 
 	Mat rvec, tvec;
 	solvePnP(points3d, points2d, cameraMatrix, distortion, rvec, tvec, true);
 
+	drawAxisSystem(img, rvec, tvec, cameraMatrix, distortion);
+
+	imshow("Image", img);
+
+	waitKey(0);
 
 	return 0;
 }
