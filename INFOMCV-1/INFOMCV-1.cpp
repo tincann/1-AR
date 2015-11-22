@@ -10,9 +10,9 @@
 #include <opencv2/highgui/highgui.hpp>
 
 
-#define CAM_CONFIG "Config\\out_camera_data_custom.xml"
-#define TEST_IMAGE "Config\\custom04.jpg"
-#define SQUARE_SIZE 1
+#define CAM_CONFIG "Config\\out_camera_data.xml"
+#define TEST_IMAGE "Config\\left03.jpg"
+#define SQUARE_SIZE 20
 
 using namespace cv;
 using namespace std;
@@ -58,8 +58,10 @@ void drawAxisSystem(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Ma
 	rot.at<double>(1) = 0;
 	rot.at<double>(2) = 0;
 */
-	vector<Point2f> imagePoints;
+
+	
 	//project the points that represent the 3d axis vectors to 2d
+	vector<Point2f> imagePoints;
 	projectPoints(axisPoints, rotation, translation, cameraMatrix, distortion, imagePoints); //always gives identical imagepoints -- strange
 
 	//draw the lines
