@@ -14,6 +14,8 @@
 #define TEST_IMAGE "Config\\custom04.jpg"
 #define SQUARE_SIZE 1
 
+#define USE_CAMERA 1
+
 using namespace cv;
 using namespace std;
 
@@ -28,40 +30,46 @@ vector<Point3f> Calculate3DPoints(int width, int height){
 	return boardPoints;
 }
 
-void drawAxisSystem(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat distortion){
+void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat distortion){
 	
 	vector<Point3f> axisPoints;
 	axisPoints.push_back(Point3f(0, 0, 0));// middle point
 	axisPoints.push_back(Point3f(3, 0, 0));// x axis
 	axisPoints.push_back(Point3f(0, 3, 0));// y axis
-	axisPoints.push_back(Point3f(0, 0, 3));// z axis
+	axisPoints.push_back(Point3f(0, 0, -3));// z axis
 	
 	//project the points that represent the 3d axis vectors to 2d
 	vector<Point2f> imagePoints;
 	projectPoints(axisPoints, rotation, translation, cameraMatrix, distortion, imagePoints); //always gives identical imagepoints -- strange
 
-	//draw the lines
+	//draw axis lines
 	arrowedLine(img, imagePoints[0], imagePoints[1], CV_RGB(255, 0, 0), 3); //x
 	arrowedLine(img, imagePoints[0], imagePoints[2], CV_RGB(0, 255, 0), 3); //y
 	arrowedLine(img, imagePoints[0], imagePoints[3], CV_RGB(0, 0, 255), 3); //z
+
+	vector<Point3f> boardPoints;
+	boardPoints.push_back(Point3f(-1, -1, 0));
+	boardPoints.push_back(Point3f(9, -1, 0));
+	boardPoints.push_back(Point3f(9, 6, 0));
+	boardPoints.push_back(Point3f(-1, 6, 0));
+	
+	vector<Point2f> pPoints;
+	//projectPoints(boardPoints, rotation, translation, cameraMatrix, distortion, pPoints); //always gives identical imagepoints -- strange
+
+	pPoints.clear();
+	pPoints.push_back(Point(5, 5));
+	pPoints.push_back(Point(200, 5));
+	pPoints.push_back(Point(200, 200));
+	pPoints.push_back(Point(5, 200));
+
+	fillConvexPoly(img, pPoints, pPoints.size(), CV_RGB(0, 0, 0));
 }
 
 int _tmain(int argc, char* argv[])
 {
-	//temporary
-	argv = new char*[2];
-	argv[1] = TEST_IMAGE;
-	
-	//read image
-	Mat img = imread(argv[1], CV_LOAD_IMAGE_COLOR);
-
-	//find chessboard corners
 	Size boardsize;
 	boardsize.width = 6;
 	boardsize.height = 9;
-	vector<Point2f> points2d;
-	bool found = findChessboardCorners(img, boardsize, points2d, CV_CALIB_CB_ADAPTIVE_THRESH);
-
 	auto points3d = Calculate3DPoints(boardsize.width, boardsize.height);
 
 	//read camera config
@@ -70,14 +78,50 @@ int _tmain(int argc, char* argv[])
 	fs["Camera_Matrix"] >> cameraMatrix;
 	fs["Distortion_Coefficients"] >> distortion;
 
-	Mat rvec, tvec;
-	solvePnP(points3d, Mat(points2d), cameraMatrix, distortion, rvec, tvec);
+#if USE_CAMERA
+	VideoCapture cap(0);
+	if (!cap.isOpened()){
+		return -1;
+	}
 
-	drawAxisSystem(img, rvec, tvec, cameraMatrix, distortion);
+	namedWindow("Frame", 1);
 
+	while (true){
+		Mat frame;
+		cap >> frame;
+		
+		
+		//find chessboard corners
+		vector<Point2f> points2d;
+		bool found = findChessboardCorners(frame, boardsize, points2d, CV_CALIB_CB_ADAPTIVE_THRESH);
+
+		if (found){
+			Mat rvec, tvec;
+			solvePnP(points3d, Mat(points2d), cameraMatrix, distortion, rvec, tvec);
+
+			drawOverlay(frame, rvec, tvec, cameraMatrix, distortion);
+		}
+		imshow("Frame", frame);
+		if (cv::waitKey(30) >= 0) break;
+	}
+#else
+	//read image
+	Mat img = imread(TEST_IMAGE, CV_LOAD_IMAGE_COLOR);
+	//find chessboard corners
+	vector<Point2f> points2d;
+	bool found = findChessboardCorners(img, boardsize, points2d, CV_CALIB_CB_ADAPTIVE_THRESH);
+
+	if (found){
+		Mat rvec, tvec;
+		solvePnP(points3d, Mat(points2d), cameraMatrix, distortion, rvec, tvec);
+
+		drawOverlay(img, rvec, tvec, cameraMatrix, distortion);
+	}
 	imshow("Image", img);
+	
+	cv::waitKey(0);
 
-	waitKey(0);
+#endif
 
 	return 0;
 }
