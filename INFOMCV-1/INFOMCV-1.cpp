@@ -23,8 +23,8 @@ using namespace std;
 //list of cube vertices
 static vector<Point3f> cubePoints;
 
-//cube position and acceleration
-static Point3f cubePos, cubeAcc;
+//cube position and speed
+static Point3f cubePos, cubeSpeed;
 
 //builds the checkerboard in 3d space
 vector<Point3f> Calculate3DPoints(int width, int height){
@@ -41,14 +41,6 @@ vector<Point3f> Calculate3DPoints(int width, int height){
 void drawPoly(Mat img, vector<Point2f> pPoints, Scalar color){
 	vector<Point> dst;
 	Mat(pPoints).convertTo(dst, Mat(dst).type());
-	fillConvexPoly(img, dst, color);
-}
-
-void drawPoly(Mat img, Point2f points[], int ptCount, Scalar color){
-	vector<Point> dst;
-	for (int i = 0; i < ptCount; i++){
-		dst.push_back(points[i]);
-	}
 	fillConvexPoly(img, dst, color);
 }
 
@@ -114,9 +106,9 @@ void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat d
 	//calculate cube position
 	vector<double> r;
 	r.assign((double*)rotation.datastart, (double*)rotation.dataend);
-	cubeAcc.x = r[0]; //x
-	cubeAcc.y = r[1]; //x
-	cubePos += cubeAcc;
+	cubeSpeed.x = r[0]; //x
+	cubeSpeed.y = r[1]; //x
+	cubePos += cubeSpeed;
 
 	if (cubePos.x < -1 || cubePos.x > 6){
 		cubePos.x = 3;
@@ -133,7 +125,7 @@ void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat d
 
 void Init(){
 	cubePos = Point3f(4, 3, 0);
-	cubeAcc = Point3f(0, 0, 0);
+	cubeSpeed = Point3f(0, 0, 0);
 
 	//draw cube
 	cubePoints.push_back(Point3f(0, 0, 0));
