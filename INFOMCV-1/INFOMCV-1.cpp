@@ -14,7 +14,7 @@
 #define TEST_IMAGE "Config\\left04.jpg"
 #define SQUARE_SIZE 1
 
-#define USE_CAMERA 0
+#define USE_CAMERA 1
 
 using namespace cv;
 using namespace std;
@@ -37,34 +37,73 @@ void drawPoly(Mat img, vector<Point2f> pPoints, Scalar color){
 	fillConvexPoly(img, dst, color);
 }
 
+void drawPoly(Mat img, Point2f points[], Scalar color){
+	fillConvexPoly(img, points, 4, color);
+}
+
+//draw a 3d cube
+void drawBox(Mat img, vector<Point2f> p, Scalar color){
+	Point2f points[4] = { p[0], p[1], p[3], p[2] };  // 0 1 3 2
+	drawPoly(img, points, CV_RGB(100, 100, 100));
+	Point2f points[4] = { p[0], p[1], p[5], p[4] };  // 0 1 5 4
+	drawPoly(img, points, CV_RGB(100, 100, 100));
+	Point2f points[4] = { p[4], p[5], p[7], p[6] };  // 4 5 7 6
+	drawPoly(img, points, CV_RGB(100, 100, 100));
+	Point2f points[4] = { p[2], p[3], p[7], p[6] };  // 2 3 7 6
+	drawPoly(img, points, CV_RGB(100, 100, 100));
+	Point2f points[4] = { p[0], p[2], p[6], p[4] };  // 0 2 6 4
+	drawPoly(img, points, CV_RGB(100, 100, 100));
+	Point2f points[4] = { p[1], p[3], p[7], p[5] };  // 1 3 7 5
+	drawPoly(img, points, CV_RGB(100, 100, 100));
+}
+
 //draw shapes on top of the image
 void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat distortion){
-	
+	vector<Point3f> points3d;
+	vector<Point2f> points2d;
+
 	//fill board with polygon
-	vector<Point3f> boardCorners;
-	boardCorners.push_back(Point3f(-1, -1, 0));
-	boardCorners.push_back(Point3f(-1, 9, 0));
-	boardCorners.push_back(Point3f(6, 9, 0));
-	boardCorners.push_back(Point3f(6, -1, 0));
+	
+	points3d.push_back(Point3f(-1, -1, 0));
+	points3d.push_back(Point3f(-1, 9, 0));
+	points3d.push_back(Point3f(6, 9, 0));
+	points3d.push_back(Point3f(6, -1, 0));
 
-	vector<Point2f> pPoints;
-	projectPoints(boardCorners, rotation, translation, cameraMatrix, distortion, pPoints);
-	drawPoly(img, pPoints, CV_RGB(255, 255, 255));
+	projectPoints(points3d, rotation, translation, cameraMatrix, distortion, points2d);
+	drawPoly(img, points2d, CV_RGB(255, 255, 255));
 
-	vector<Point3f> axisPoints;
-	axisPoints.push_back(Point3f(0, 0, 0));// middle point
-	axisPoints.push_back(Point3f(3, 0, 0));// x axis
-	axisPoints.push_back(Point3f(0, 3, 0));// y axis
-	axisPoints.push_back(Point3f(0, 0, -3));// z axis
+	//draw cube
+	points3d.clear();
+	points2d.clear();
+	
+	points3d.push_back(Point3f(0, 0, 0));
+	points3d.push_back(Point3f(1, 0, 0));
+	points3d.push_back(Point3f(0, 1, 0));
+	points3d.push_back(Point3f(1, 1, 0));
+	points3d.push_back(Point3f(0, 0, -1));
+	points3d.push_back(Point3f(1, 0, -1));
+	points3d.push_back(Point3f(0, 1, -1));
+	points3d.push_back(Point3f(1, 1, -1));
+
+	projectPoints(points3d, rotation, translation, cameraMatrix, distortion, points2d);
+
+	drawBox(img, points2d, CV_RGB(0, 0, 0));
+
+	points3d.clear();
+	points2d.clear();
+
+	points3d.push_back(Point3f(0, 0, 0)); // middle point
+	points3d.push_back(Point3f(3, 0, 0)); // x axis
+	points3d.push_back(Point3f(0, 3, 0)); // y axis
+	points3d.push_back(Point3f(0, 0, -3));// z axis
 	
 	//project the points that represent the 3d axis vectors to 2d
-	vector<Point2f> imagePoints;
-	projectPoints(axisPoints, rotation, translation, cameraMatrix, distortion, imagePoints);
+	projectPoints(points3d, rotation, translation, cameraMatrix, distortion, points2d);
 
 	//draw axis lines
-	arrowedLine(img, imagePoints[0], imagePoints[1], CV_RGB(255, 0, 0), 3); //x
-	arrowedLine(img, imagePoints[0], imagePoints[2], CV_RGB(0, 255, 0), 3); //y
-	arrowedLine(img, imagePoints[0], imagePoints[3], CV_RGB(0, 0, 255), 3); //z
+	arrowedLine(img, points2d[0], points2d[1], CV_RGB(255, 0, 0), 3); //x
+	arrowedLine(img, points2d[0], points2d[2], CV_RGB(0, 255, 0), 3); //y
+	arrowedLine(img, points2d[0], points2d[3], CV_RGB(0, 0, 255), 3); //z
 }
 
 int _tmain(int argc, char* argv[])
