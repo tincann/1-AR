@@ -10,11 +10,11 @@
 #include <opencv2/highgui/highgui.hpp>
 
 
-#define CAM_CONFIG "Config\\out_camera_data_custom.xml"
-#define TEST_IMAGE "Config\\custom04.jpg"
+#define CAM_CONFIG "Config\\out_camera_data.xml"
+#define TEST_IMAGE "Config\\left04.jpg"
 #define SQUARE_SIZE 1
 
-#define USE_CAMERA 1
+#define USE_CAMERA 0
 
 using namespace cv;
 using namespace std;
@@ -30,8 +30,23 @@ vector<Point3f> Calculate3DPoints(int width, int height){
 	return boardPoints;
 }
 
+//draw shapes on top of the image
 void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat distortion){
 	
+	//fill board with polygon
+	vector<Point3f> boardCorners;
+	boardCorners.push_back(Point3f(-1, -1, 0));
+	boardCorners.push_back(Point3f(-1, 9, 0));
+	boardCorners.push_back(Point3f(6, 9, 0));
+	boardCorners.push_back(Point3f(6, -1, 0));
+
+	vector<Point2f> pPoints;
+	projectPoints(boardCorners, rotation, translation, cameraMatrix, distortion, pPoints);
+	vector<Point> dst;
+	Mat(pPoints).convertTo(dst, Mat(dst).type());
+	fillConvexPoly(img, dst, CV_RGB(255, 255, 255));
+
+
 	vector<Point3f> axisPoints;
 	axisPoints.push_back(Point3f(0, 0, 0));// middle point
 	axisPoints.push_back(Point3f(3, 0, 0));// x axis
@@ -40,29 +55,12 @@ void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat d
 	
 	//project the points that represent the 3d axis vectors to 2d
 	vector<Point2f> imagePoints;
-	projectPoints(axisPoints, rotation, translation, cameraMatrix, distortion, imagePoints); //always gives identical imagepoints -- strange
+	projectPoints(axisPoints, rotation, translation, cameraMatrix, distortion, imagePoints);
 
 	//draw axis lines
 	arrowedLine(img, imagePoints[0], imagePoints[1], CV_RGB(255, 0, 0), 3); //x
 	arrowedLine(img, imagePoints[0], imagePoints[2], CV_RGB(0, 255, 0), 3); //y
 	arrowedLine(img, imagePoints[0], imagePoints[3], CV_RGB(0, 0, 255), 3); //z
-
-	vector<Point3f> boardPoints;
-	boardPoints.push_back(Point3f(-1, -1, 0));
-	boardPoints.push_back(Point3f(9, -1, 0));
-	boardPoints.push_back(Point3f(9, 6, 0));
-	boardPoints.push_back(Point3f(-1, 6, 0));
-	
-	vector<Point2f> pPoints;
-	//projectPoints(boardPoints, rotation, translation, cameraMatrix, distortion, pPoints); //always gives identical imagepoints -- strange
-
-	pPoints.clear();
-	pPoints.push_back(Point(5, 5));
-	pPoints.push_back(Point(200, 5));
-	pPoints.push_back(Point(200, 200));
-	pPoints.push_back(Point(5, 200));
-
-	fillConvexPoly(img, pPoints, pPoints.size(), CV_RGB(0, 0, 0));
 }
 
 int _tmain(int argc, char* argv[])
