@@ -19,6 +19,13 @@
 using namespace cv;
 using namespace std;
 
+
+//list of cube vertices
+static vector<Point3f> cubePoints;
+
+//cube position and acceleration
+static Point3f cubePos, cubeAcc;
+
 //builds the checkerboard in 3d space
 vector<Point3f> Calculate3DPoints(int width, int height){
 	vector<Point3f> boardPoints;
@@ -42,23 +49,33 @@ void drawPoly(Mat img, Point2f points[], int ptCount, Scalar color){
 	for (int i = 0; i < ptCount; i++){
 		dst.push_back(points[i]);
 	}
-	fillConvexPoly(img, dst, CV_RGB(0, 0, 0));
+	fillConvexPoly(img, dst, color);
 }
 
-//draw a 3d cube
-void drawBox(Mat img, vector<Point2f> p, Scalar color){
-	Point2f points1[4] = { p[0], p[1], p[3], p[2] };  // 0 1 3 2
-	drawPoly(img, points1, 4, CV_RGB(100, 100, 100));
-	Point2f points2[4] = { p[0], p[1], p[5], p[4] };  // 0 1 5 4
-	drawPoly(img, points2, 4, CV_RGB(100, 100, 100));
-	Point2f points3[4] = { p[4], p[5], p[7], p[6] };  // 4 5 7 6
-	drawPoly(img, points3, 4, CV_RGB(100, 100, 100));
-	Point2f points4[4] = { p[2], p[3], p[7], p[6] };  // 2 3 7 6
-	drawPoly(img, points4, 4, CV_RGB(100, 100, 100));
-	Point2f points5[4] = { p[0], p[2], p[6], p[4] };  // 0 2 6 4
-	drawPoly(img, points5, 4, CV_RGB(100, 100, 100));
-	Point2f points6[4] = { p[1], p[3], p[7], p[5] };  // 1 3 7 5
-	drawPoly(img, points6, 4, CV_RGB(100, 100, 100));
+void drawCubeWireframe(Mat img, Point3f loc, Scalar color, Mat rvec, Mat tvec, Mat cameraMatrix, Mat distCoeffs){
+	
+	//add location to every cube point
+	vector<Point3f> points;
+	for (int i = 0; i < cubePoints.size(); i++){
+		points.push_back(cubePoints[i] + loc);
+	}
+
+	vector<Point2f> p;
+	projectPoints(points, rvec, tvec, cameraMatrix, distCoeffs, p);
+	
+	line(img, p[0], p[1], color);
+	line(img, p[1], p[3], color);
+	line(img, p[3], p[2], color);
+	line(img, p[2], p[0], color);
+	line(img, p[3], p[7], color);
+	line(img, p[7], p[5], color);
+	line(img, p[5], p[1], color);
+	line(img, p[6], p[4], color);
+	line(img, p[2], p[3], color);
+	line(img, p[7], p[6], color);
+	line(img, p[6], p[2], color);
+	line(img, p[5], p[4], color);
+	line(img, p[4], p[0], color);
 }
 
 //draw shapes on top of the image
@@ -67,7 +84,6 @@ void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat d
 	vector<Point2f> points2d;
 
 	//fill board with polygon
-	
 	points3d.push_back(Point3f(-1, -1, 0));
 	points3d.push_back(Point3f(-1, 9, 0));
 	points3d.push_back(Point3f(6, 9, 0));
@@ -75,23 +91,6 @@ void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat d
 
 	projectPoints(points3d, rotation, translation, cameraMatrix, distortion, points2d);
 	drawPoly(img, points2d, CV_RGB(255, 255, 255));
-
-	//draw cube
-	points3d.clear();
-	points2d.clear();
-	
-	points3d.push_back(Point3f(0, 0, 0));
-	points3d.push_back(Point3f(1, 0, 0));
-	points3d.push_back(Point3f(0, 1, 0));
-	points3d.push_back(Point3f(1, 1, 0));
-	points3d.push_back(Point3f(0, 0, -1));
-	points3d.push_back(Point3f(1, 0, -1));
-	points3d.push_back(Point3f(0, 1, -1));
-	points3d.push_back(Point3f(1, 1, -1));
-
-	projectPoints(points3d, rotation, translation, cameraMatrix, distortion, points2d);
-
-	drawBox(img, points2d, CV_RGB(0, 0, 0));
 
 	points3d.clear();
 	points2d.clear();
@@ -108,10 +107,48 @@ void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat d
 	arrowedLine(img, points2d[0], points2d[1], CV_RGB(255, 0, 0), 3); //x
 	arrowedLine(img, points2d[0], points2d[2], CV_RGB(0, 255, 0), 3); //y
 	arrowedLine(img, points2d[0], points2d[3], CV_RGB(0, 0, 255), 3); //z
+
+	points3d.clear();
+	points2d.clear();
+
+	//calculate cube position
+	vector<double> r;
+	r.assign((double*)rotation.datastart, (double*)rotation.dataend);
+	cubeAcc.x = r[0]; //x
+	cubeAcc.y = r[1]; //x
+	cubePos += cubeAcc;
+
+	if (cubePos.x < -1 || cubePos.x > 6){
+		cubePos.x = 3;
+	}
+	if (cubePos.y < -1 || cubePos.y > 9){
+		cubePos.y = 4;
+	}
+
+	cout << cubePos << endl;
+
+	//draw cube
+	drawCubeWireframe(img, cubePos, CV_RGB(255, 0, 0), rotation, translation, cameraMatrix, distortion);
+}
+
+void Init(){
+	cubePos = Point3f(4, 3, 0);
+	cubeAcc = Point3f(0, 0, 0);
+
+	//draw cube
+	cubePoints.push_back(Point3f(0, 0, 0));
+	cubePoints.push_back(Point3f(1, 0, 0));
+	cubePoints.push_back(Point3f(0, 1, 0));
+	cubePoints.push_back(Point3f(1, 1, 0));
+	cubePoints.push_back(Point3f(0, 0, -1));
+	cubePoints.push_back(Point3f(1, 0, -1));
+	cubePoints.push_back(Point3f(0, 1, -1));
+	cubePoints.push_back(Point3f(1, 1, -1));
 }
 
 int _tmain(int argc, char* argv[])
 {
+	Init();
 	Size boardsize;
 	boardsize.width = 6;
 	boardsize.height = 9;
