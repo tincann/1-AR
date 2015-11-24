@@ -30,6 +30,13 @@ vector<Point3f> Calculate3DPoints(int width, int height){
 	return boardPoints;
 }
 
+//polygon draw function that can receive vector<Point2f>
+void drawPoly(Mat img, vector<Point2f> pPoints, Scalar color){
+	vector<Point> dst;
+	Mat(pPoints).convertTo(dst, Mat(dst).type());
+	fillConvexPoly(img, dst, color);
+}
+
 //draw shapes on top of the image
 void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat distortion){
 	
@@ -42,10 +49,7 @@ void drawOverlay(Mat img, Mat rotation, Mat translation, Mat cameraMatrix, Mat d
 
 	vector<Point2f> pPoints;
 	projectPoints(boardCorners, rotation, translation, cameraMatrix, distortion, pPoints);
-	vector<Point> dst;
-	Mat(pPoints).convertTo(dst, Mat(dst).type());
-	fillConvexPoly(img, dst, CV_RGB(255, 255, 255));
-
+	drawPoly(img, pPoints, CV_RGB(255, 255, 255));
 
 	vector<Point3f> axisPoints;
 	axisPoints.push_back(Point3f(0, 0, 0));// middle point
