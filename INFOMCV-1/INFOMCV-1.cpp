@@ -37,24 +37,28 @@ void drawPoly(Mat img, vector<Point2f> pPoints, Scalar color){
 	fillConvexPoly(img, dst, color);
 }
 
-void drawPoly(Mat img, Point2f points[], Scalar color){
-	fillConvexPoly(img, points, 4, color);
+void drawPoly(Mat img, Point2f points[], int ptCount, Scalar color){
+	vector<Point> dst;
+	for (int i = 0; i < ptCount; i++){
+		dst.push_back(points[i]);
+	}
+	fillConvexPoly(img, dst, CV_RGB(0, 0, 0));
 }
 
 //draw a 3d cube
 void drawBox(Mat img, vector<Point2f> p, Scalar color){
-	Point2f points[4] = { p[0], p[1], p[3], p[2] };  // 0 1 3 2
-	drawPoly(img, points, CV_RGB(100, 100, 100));
-	Point2f points[4] = { p[0], p[1], p[5], p[4] };  // 0 1 5 4
-	drawPoly(img, points, CV_RGB(100, 100, 100));
-	Point2f points[4] = { p[4], p[5], p[7], p[6] };  // 4 5 7 6
-	drawPoly(img, points, CV_RGB(100, 100, 100));
-	Point2f points[4] = { p[2], p[3], p[7], p[6] };  // 2 3 7 6
-	drawPoly(img, points, CV_RGB(100, 100, 100));
-	Point2f points[4] = { p[0], p[2], p[6], p[4] };  // 0 2 6 4
-	drawPoly(img, points, CV_RGB(100, 100, 100));
-	Point2f points[4] = { p[1], p[3], p[7], p[5] };  // 1 3 7 5
-	drawPoly(img, points, CV_RGB(100, 100, 100));
+	Point2f points1[4] = { p[0], p[1], p[3], p[2] };  // 0 1 3 2
+	drawPoly(img, points1, 4, CV_RGB(100, 100, 100));
+	Point2f points2[4] = { p[0], p[1], p[5], p[4] };  // 0 1 5 4
+	drawPoly(img, points2, 4, CV_RGB(100, 100, 100));
+	Point2f points3[4] = { p[4], p[5], p[7], p[6] };  // 4 5 7 6
+	drawPoly(img, points3, 4, CV_RGB(100, 100, 100));
+	Point2f points4[4] = { p[2], p[3], p[7], p[6] };  // 2 3 7 6
+	drawPoly(img, points4, 4, CV_RGB(100, 100, 100));
+	Point2f points5[4] = { p[0], p[2], p[6], p[4] };  // 0 2 6 4
+	drawPoly(img, points5, 4, CV_RGB(100, 100, 100));
+	Point2f points6[4] = { p[1], p[3], p[7], p[5] };  // 1 3 7 5
+	drawPoly(img, points6, 4, CV_RGB(100, 100, 100));
 }
 
 //draw shapes on top of the image
